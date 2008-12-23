@@ -4,6 +4,8 @@
 # (C)2005 by Dagmar d'Surreal
 # Released under the GPL 2.0
 #
+# Customized by Erik Hahn
+#
 # Copy to /sbin/installkernel and make executeable.  The `make install` target
 # should then put the new kernel in /boot and then re-run lilo.
 #
@@ -27,17 +29,17 @@ if [ -z "${BASH_ARGV[3]}" ]; then
   exit 1
 fi
 
-if [[ ! -h "${BASH_ARGV[0]}/vmlinuz" ]]; then
+if [[ -f "${BASH_ARGV[0]}/vmlinuz" ]]; then
   echo "$0 will not replace anything unless ${BASH_ARGV[0]}/vmlinuz is a symlink."
   exit
 fi
 
-if [[ ! -h "${BASH_ARGV[0]}/System.map" ]]; then
+if [[ -f "${BASH_ARGV[0]}/System.map" ]]; then
   echo "$0 will not replace anything unless ${BASH_ARGV[0]}/System.map is a symlink."
   exit
 fi
 
-if [[ ! -h "${BASH_ARGV[0]}/config" ]]; then
+if [[ -f "${BASH_ARGV[0]}/config" ]]; then
   echo "$0 will not replace anything unless ${BASH_ARGV[0]}/config is a symlink."
   exit
 fi
@@ -58,23 +60,23 @@ fi
 # since it only increases load time by a trivial amount and can save us much
 # precious space in the / filesystem.  If you don't want this, just comment out
 # this particular section.
-if [ -d /lib/modules/${BASH_ARGV[3]}/ ]; then
-  echo "Compressing installed modules in /lib/modules/${BASH_ARGV[3]}/..."
-  if [ -x /bin/gzip ]; then
-    find /lib/modules/${BASH_ARGV[3]}/ -name '*.ko' ! -name 'zlib_*.ko' -exec gzip -9 {} \;
-    if [ ! $? ]; then 
-       echo "Something went wrong when trying to compress the kernel modules!"
-       echo "It is possible that parts of your filesystem may be full, which"
-       echo "is something that you should probably address immediately."
-       echo "Aborting install of kernel."
-       exit 1
-    fi
-  else
-    echo "Unable to compress modules without /bin/gzip."
-  fi
-else
-  echo "No /lib/modules/${BASH_ARGV[3]}/ module directory exists."
-fi 
+#if [ -d /lib/modules/${BASH_ARGV[3]}/ ]; then
+#  echo "Compressing installed modules in /lib/modules/${BASH_ARGV[3]}/..."
+#  if [ -x /bin/gzip ]; then
+#    find /lib/modules/${BASH_ARGV[3]}/ -name '*.ko' ! -name 'zlib_*.ko' -exec gzip -9 {} \;
+#    if [ ! $? ]; then 
+#       echo "Something went wrong when trying to compress the kernel modules!"
+#       echo "It is possible that parts of your filesystem may be full, which"
+#       echo "is something that you should probably address immediately."
+#       echo "Aborting install of kernel."
+#       exit 1
+#    fi
+#  else
+#    echo "Unable to compress modules without /bin/gzip."
+#  fi
+#else
+#  echo "No /lib/modules/${BASH_ARGV[3]}/ module directory exists."
+#fi 
 
 # By this point, everything should be relatively sane, so it's time to attempt 
 # the kernel install...  Aside from a full /boot filesystem, there's not much
@@ -126,8 +128,3 @@ if [ ! $? ]; then
   exit 1
 fi
 
-
-# The -p is for the few people that know you can set passwords on lilo that
-# will then be required if someone wants to be sneaky and root the system
-# with "linux single" or similar lameness..
-/sbin/lilo -p
