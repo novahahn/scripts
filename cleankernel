@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+# Cleankernel 0.1 - display a list of files and directories that belong
+# to old unused kernels
+#
+# Copyright 2008 Erik Hahn
+#
+# WARNING: Don't trust this script, always check it's output before 
+# you delete anything.
+
+import os
+from os import path
+
+# Build the list of kernels to be kept
+os.chdir("/boot")
+
+keep = [ s.replace("vmlinuz-","") for s in [
+    path.basename(path.realpath("vmlinuz")),
+    path.basename(path.realpath("vmlinuz.old")),
+    path.basename(path.realpath("vmlinuz.boots"))
+    ]
+]
+
+# Create the list of vmlinuz/System.map/config files in /boot to be kept
+keep_in_boot=[]
+
+for f in os.listdir("."):
+    for k in keep:
+        if f.count(k) != 0:
+            keep_in_boot.append(f)
+
+for f in os.listdir("."):
+    if not keep_in_boot.count(f) and (f.count("vmlinuz-") or
+            f.count("config-") or f.count("System.map-")):
+        print path.realpath(f)
+
+# Purge old module dirs
+keep = [ s.replace("-dirty","") for s in keep ]
+
+os.chdir("/lib/modules")
+for d in os.listdir("."):
+    if not keep.count(d):
+        print path.realpath(d)
