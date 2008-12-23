@@ -75,7 +75,7 @@ fi
 #else
 #  echo "No /lib/modules/${BASH_ARGV[3]}/ module directory exists."
 #fi 
-#
+
 # By this point, everything should be relatively sane, so it's time to attempt 
 # the kernel install...  Aside from a full /boot filesystem, there's not much
 # that can actually screw this up.
