@@ -1,0 +1,6 @@
+#!/bin/sh
+
+DISPLAY=$(echo $DISPLAY | sed -e 's/[0-9]$//')$1
+echo $DISPLAY
+wmiiwarp 800 600
+
