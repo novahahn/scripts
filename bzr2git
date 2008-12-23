@@ -3,6 +3,9 @@
 # Simple script to import bzr into git
 # Only imports trunk and won't work in most cases
 
+git init
+echo .bzr >> .gitignore
+
 bzr log --line | tac | while read line; do
     bzr revert -r $(echo $line | cut -f1 -d:)
     git add .
