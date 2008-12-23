@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# /sbin/installkernel v1.3 (for Slackware)
+# /sbin/installkernel v1.3 (for Slackware) (modified)
 # (C)2005 by Dagmar d'Surreal
 # Released under the GPL 2.0
 #
@@ -17,6 +17,13 @@
 #   - Removed some error output hinting the user might be out of disk space.
 #     If they can't tell already, we can't exactly help then.
 #   - Added a hook to also copy the config that was used into /boot
+#
+# (C) 2008 by Erik Hahn
+#
+# Changes:
+#  Sat 2008-12-06:
+#  -Create /boot/System.map.old, /boot/vmlinuz.old and /boot/config.old
+#   symlinks.
 
 # Rather than risk screwing up your configuration, this script will do
 # nothing if both /boot/System.map, /boot/vmlinuz, and /boot/config
