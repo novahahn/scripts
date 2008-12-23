@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Workaround for rc's pollution of the environment
+
+if [ -z $1 ]; then
+    /usr/bin/env | sed -e '/^fn.*/d'
+else
+    env $@
+fi
