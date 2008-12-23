@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Simple script to import bzr into git
+# Only imports trunk and won't work in most cases
+
+bzr log --line | tac | while read line; do
+    bzr revert -r $(echo $line | cut -f1 -d:)
+    git add .
+    git commit -m "$(echo $line | cut -f5- -d' ')"
+    echo
+done
+    
