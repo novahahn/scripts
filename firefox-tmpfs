@@ -1,0 +1,15 @@
+#!/bin/sh
+
+PROFILE="zlvjm7sw.default"
+
+cd "${HOME}/.mozilla/firefox"
+if test ! -f "${PROFILE}/.unpacked"
+then
+   mount ${PROFILE} && \
+   tar xpf packed.tar && \
+   touch "${PROFILE}/.unpacked"
+else
+    tar cpf packed.tmp.tar "$PROFILE" && \
+    test -f packed.tar && mv packed.tar packed.old.tar && \
+    mv packed.tmp.tar packed.tar
+fi 
