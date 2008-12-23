@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# /sbin/installkernel v1.3 (for Slackware)
+# (C)2005 by Dagmar d'Surreal
+# Released under the GPL 2.0
+#
+# Copy to /sbin/installkernel and make executeable.  The `make install` target
+# should then put the new kernel in /boot and then re-run lilo.
+#
+# Changelog:
+#   Thu Feb 21 08:24:04 CST 2008  (version 1.3)
+#   - Implemented a bit of script that gzip compresses all the kernel modules
+#     to save disk space in /.
+#   Sun Feb 26 06:22:29 CST 2006  (version 1.2)
+#   - Added the lines that copy the System.map file into place and create the
+#     symlink so that we can keep that one orderly as well.
+#   - Removed some error output hinting the user might be out of disk space.
+#     If they can't tell already, we can't exactly help then.
+#   - Added a hook to also copy the config that was used into /boot
+
+# Rather than risk screwing up your configuration, this script will do
+# nothing if both /boot/System.map, /boot/vmlinuz, and /boot/config
+# are not *symlinks*.  You have been warned.
+
+if [ -z "${BASH_ARGV[3]}" ]; then
+  echo "$0 will normally only be called by the kernel Makefile."
+  exit 1
+fi
+
+if [[ ! -h "${BASH_ARGV[0]}/vmlinuz" ]]; then
+  echo "$0 will not replace anything unless ${BASH_ARGV[0]}/vmlinuz is a symlink."
+  exit
+fi
+
+if [[ ! -h "${BASH_ARGV[0]}/System.map" ]]; then
+  echo "$0 will not replace anything unless ${BASH_ARGV[0]}/System.map is a symlink."
+  exit
+fi
+
+if [[ ! -h "${BASH_ARGV[0]}/config" ]]; then
+  echo "$0 will not replace anything unless ${BASH_ARGV[0]}/config is a symlink."
+  exit
+fi
+
+if [[ ! -r ${srctree}/${BASH_ARGV[2]} ]]; then
+  echo "Something went wrong and the kernel image isn't at ${srctree}/${BASH_ARGV[2]} like it should be."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+if [ ! -d ${BASH_ARGV[0]} ]; then
+  echo "The ${BASH_ARGV[0]} directory does not appear to exist."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+# We're going to go ahead and gzip compress all the modules to save disk space
+# since it only increases load time by a trivial amount and can save us much
+# precious space in the / filesystem.  If you don't want this, just comment out
+# this particular section.
+if [ -d /lib/modules/${BASH_ARGV[3]}/ ]; then
+  echo "Compressing installed modules in /lib/modules/${BASH_ARGV[3]}/..."
+  if [ -x /bin/gzip ]; then
+    find /lib/modules/${BASH_ARGV[3]}/ -name '*.ko' ! -name 'zlib_*.ko' -exec gzip -9 {} \;
+    if [ ! $? ]; then 
+       echo "Something went wrong when trying to compress the kernel modules!"
+       echo "It is possible that parts of your filesystem may be full, which"
+       echo "is something that you should probably address immediately."
+       echo "Aborting install of kernel."
+       exit 1
+    fi
+  else
+    echo "Unable to compress modules without /bin/gzip."
+  fi
+else
+  echo "No /lib/modules/${BASH_ARGV[3]}/ module directory exists."
+fi 
+
+# By this point, everything should be relatively sane, so it's time to attempt 
+# the kernel install...  Aside from a full /boot filesystem, there's not much
+# that can actually screw this up.
+
+install -m 644 ${srctree}/${BASH_ARGV[2]} ${BASH_ARGV[0]}/vmlinuz-${BASH_ARGV[3]} 
+if [ ! $? ]; then
+  echo "An unexpected error occured while copying the new kernel to ${BASH_ARGV[0]}."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+install -m 644 ${srctree}/${BASH_ARGV[1]} ${BASH_ARGV[0]}/System.map-${BASH_ARGV[3]}
+if [ ! $? ]; then
+  echo "An unexpected error occured while copying the new System.map file to ${BASH_ARGV[0]}."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+install -m 644 ${srctree}/.config ${BASH_ARGV[0]}/config-${BASH_ARGV[3]}
+if [ ! $? ]; then
+  echo "An unexpected error occured while copying the new config file to ${BASH_ARGV[0]}."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+# These symlinks probably can't screw up unless something's been mounted
+# read-only since even if we're out of disk space they'll take up just as much
+# space as the overwritten symlinks did.  ;)
+
+ln -sf vmlinuz-${BASH_ARGV[3]} /boot/vmlinuz
+if [ ! $? ]; then
+  echo "An unexpected error occured while symlinking the new kernel in ${BASH_ARGV[0]}."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+ln -sf System.map-${BASH_ARGV[3]} /boot/System.map
+if [ ! $? ]; then
+  echo "An unexpected error occured while symlinking the new System.map file in ${BASH_ARGV[0]}."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+ln -sf config-${BASH_ARGV[3]} /boot/config
+if [ ! $? ]; then
+  echo "An unexpected error occured while symlinking the new config file in ${BASH_ARGV[0]}."
+  echo "Aborting install of kernel."
+  exit 1
+fi
+
+
+# The -p is for the few people that know you can set passwords on lilo that
+# will then be required if someone wants to be sneaky and root the system
+# with "linux single" or similar lameness..
+/sbin/lilo -p
