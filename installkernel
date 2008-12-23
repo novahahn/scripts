@@ -125,9 +125,3 @@ if [ ! $? ]; then
   echo "Aborting install of kernel."
   exit 1
 fi
-
-
-# The -p is for the few people that know you can set passwords on lilo that
-# will then be required if someone wants to be sneaky and root the system
-# with "linux single" or similar lameness..
-/sbin/lilo -p
