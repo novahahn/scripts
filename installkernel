@@ -120,7 +120,7 @@ if [ ! $? ]; then
   exit 1
 fi
 
-mv /boot/System.map.old
+mv /boot/System.map /boot/System.map.old
 ln -sf System.map-${BASH_ARGV[3]} /boot/System.map
 if [ ! $? ]; then
   echo "An unexpected error occured while symlinking the new System.map file in ${BASH_ARGV[0]}."
