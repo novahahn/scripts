@@ -1,0 +1,5 @@
+git status | tail -n '+5' | head -n '-1' | sed -e 's:#\t*::' >> .gitignore
+sed -ie 's: :\n:g' .gitignore
+sort .gitignore -o .gitignore
+git add .gitignore
+git commit -m "Update .gitignore"
