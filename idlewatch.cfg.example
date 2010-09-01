@@ -1,0 +1,7 @@
+[Idlewatch]
+# Server and login information
+server=imap.example.com
+login=username
+password=password
+# The command to be executed when server sends an IDLE response
+command=offlineimap -k "Account_Personal:autorefresh=0" -u Noninteractive.Basic
