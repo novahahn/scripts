@@ -1,0 +1,3 @@
+[submodule "imaplib2"]
+	path = imaplib2
+	url = http://github.com/bogner/imaplib2.git

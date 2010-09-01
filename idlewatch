@@ -4,7 +4,8 @@
 # Based on Tim Stoop's example at
 # http://blog.hokkertjes.nl/2009/03/11/python-imap-idle-with-imaplib2/
 
-import imaplib2, time, sys
+from imaplib2 import imaplib2
+import time, sys
 from threading import *
 
 # This is the threading object that does all the waiting on
