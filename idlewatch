@@ -83,6 +83,12 @@ def main(argv):
         # Start the Idler thread
         idler = Idler(M)
         idler.start()
+        # Wait forever
+        try:
+            while True:
+                time.sleep(300)
+        except KeyboardInterrupt:
+            sys.exit(0)
     finally:
         # Clean up.
         idler.stop()
