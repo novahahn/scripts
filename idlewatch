@@ -7,6 +7,7 @@
 from imaplib2 import imaplib2
 import time, sys
 from threading import *
+from ConfigParser import ConfigParser
 
 # This is the threading object that does all the waiting on
 # the event
@@ -63,20 +64,25 @@ class Idler(object):
         print "Got an event!"
 
 def main(argv):
+    # Read a config file
+    if argv[1] is None:
+        print "Usage: idlewatch <CONFIG FILE>"
+        sys.exit(1)
+    config = ConfigParser()
+    config.readfp(open(argv[1]))
+
     # Had to do this stuff in a try-finally, since some testing
     # went a little wrong.....
     try:
-        # Set the following two lines to your creds and server
-        M = imaplib2.IMAP4_SSL("mail.example.com")
-        M.login("mylogin","mypassword")
+        M = imaplib2.IMAP4_SSL(config.get('Idlewatch', 'server'))
+        M.login(config.get('Idlewatch', 'login'),
+                config.get('Idlewatch', 'password'))
         # We need to get out of the AUTH state, so we just select
         # the INBOX.
         M.select("INBOX")
         # Start the Idler thread
         idler = Idler(M)
         idler.start()
-        # Because this is just an example, exit after 1 minute.
-        time.sleep(1*60)
     finally:
         # Clean up.
         idler.stop()
