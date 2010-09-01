@@ -6,15 +6,17 @@
 
 from imaplib2 import imaplib2
 import time, sys
+import subprocess, shlex
 from threading import *
 from ConfigParser import ConfigParser
 
 # This is the threading object that does all the waiting on
 # the event
 class Idler(object):
-    def __init__(self, conn):
+    def __init__(self, conn, command):
         self.thread = Thread(target=self.idle)
         self.M = conn
+        self.command = command
         self.event = Event()
 
     def start(self):
@@ -61,7 +63,7 @@ class Idler(object):
     # The method that gets called when a new email arrives.
     # Replace it with something better.
     def dosync(self):
-        print "Got an event!"
+        subprocess.call(shlex.split(self.command))
 
 def main(argv):
     # Read a config file
@@ -81,7 +83,7 @@ def main(argv):
         # the INBOX.
         M.select("INBOX")
         # Start the Idler thread
-        idler = Idler(M)
+        idler = Idler(M, config.get('Idlewatch', 'command'))
         idler.start()
         # Wait forever
         try:
